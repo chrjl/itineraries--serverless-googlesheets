@@ -17,6 +17,13 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref StageName
+  GoogleApiPythonClientLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: layers/google-api-python-client/layer-content.zip
+      LicenseInfo: Apache-2.0
+      CompatibleRuntimes:
+        - python3.13
 
 Outputs:
   HttpApiUrl:

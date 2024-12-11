@@ -65,3 +65,9 @@ Outputs:
     Description: Api id of HttpApi
     Value:
       Ref: HttpApi
+  GetAllItinerariesFunction:
+    Description: GetAllItinerariesFunction ARN
+    Value: !GetAtt GetAllItinerariesFunction.Arn
+  GetItineraryFunction:
+    Description: GetItineraryFunction ARN
+    Value: !GetAtt GetItineraryFunction.Arn

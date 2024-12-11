@@ -24,6 +24,24 @@ Resources:
       LicenseInfo: Apache-2.0
       CompatibleRuntimes:
         - python3.13
+  GetAllItinerariesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: get_all_itineraries.lambda_handler
+      Runtime: python3.13
+      Layers:
+        - !Ref GoogleApiPythonClientLayer
+      Environment:
+        Variables:
+          SERVICE_ACCOUNT: null
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: HttpApi
+            Path: /itineraries
+            Method: GET
 
 Outputs:
   HttpApiUrl:

@@ -42,6 +42,19 @@ Resources:
             ApiId: HttpApi
             Path: /itineraries
             Method: GET
+  GetItineraryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: get_itinerary.lambda_handler
+      Runtime: python3.13
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: HttpApi
+            Path: /itineraries/{id}
+            Method: GET
 
 Outputs:
   HttpApiUrl:

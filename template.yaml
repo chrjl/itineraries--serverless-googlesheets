@@ -12,12 +12,19 @@ Globals:
     Environment:
       Variables:
         SERVICE_ACCOUNT: null
+        SERVICE_ACCOUNT_PARAMETER_NAME: !Ref ServiceAccountInfoParameter
 Parameters:
   StageName:
     Type: String
     Default: Prod
 
 Resources:
+  ServiceAccountInfoParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: manually replace with SecureString after creation
+      Value: placeholder
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -57,6 +64,10 @@ Resources:
             Method: GET
 
 Outputs:
+  ServiceAccountInfoParameter:
+    Description: Parameter name
+    Value:
+      Ref: ServiceAccountInfoParameter
   HttpApiUrl:
     Description: URL of your API endpoint
     Value:

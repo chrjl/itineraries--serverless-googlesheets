@@ -7,18 +7,21 @@ AWS SAM project for serverless front-facing API of trip itinerary planning app b
 
 This project creates the following resources:
 
-- [ ] Parameter Store parameter: to store the Google Cloud service account credentials
-- [ ] API Gateway
-- [ ] Lambda layer: [`google-api-python-client`](https://github.com/googleapis/google-api-python-client) Lambda dependency
+- [x] Parameter Store parameter: to store the Google Cloud service account credentials
 
-Migration Lambda function 
+  The parameter needs to be manually written after creation (a placeholder value is set in the template). See [#development-and-deployment](#development-and-deployment).
+
+- [x] API Gateway HTTP API
+- [x] Lambda layer: [`google-api-python-client`](https://github.com/googleapis/google-api-python-client) Lambda dependency
+
+Migration Lambda function
 
 - [ ] Scaffold Google Drive folders, template spreadsheet
 
 Lambda functions (and API routes) for read:
 
-- [ ] Get all itineraries
-- [ ] Get an itinerary
+- [x] Get all itineraries
+- [x] Get an itinerary
 
 Lambda functions (and API routes) for write:
 
@@ -27,15 +30,35 @@ Lambda functions (and API routes) for write:
 - [ ] Add an activity to itinerary
 - [ ] Update an itinerary
 
+The Lambda functions require Google Cloud service account credentials, and are authored to search for them. The Lambda code is authored to search first in environment variables (`SERVICE_ACCOUNT_INFO`) then, if the environment variable is not found, in SSM Parameter Store.
+
+Resolving secret string parameters from Parameter Store into environment variables is not supported for Lambda (in CloudFormation), so the `Boto3` SSM client is used in the Lambda code to retrieve the parameter. The `SSMParameterReadPolicy` needs to be added to Lambda functions to permit access to the parameter.
+
 ## Development and deployment
 
 Prior to deployment (or development):
 
-- Create and store credentials for Google Cloud service account
+- Create and store credentials for Google Cloud service account in either Lambda function environment variable `SERVICE_ACCOUNT_INFO` or SSM Parameter Store secure string defined in the template.
 
   - Manually update Parameter Store parameter with Google Cloud service account details
 
-    Secure string parameters are not supported in CloudFormation, so a placeholder string is used in the SAM template. This needs to be updated to allow Lambda functions access to the Google Workspace APIs.
+    Secure string parameters are not supported in CloudFormation, so a placeholder string is used in the SAM template. This needs to be updated to allow Lambda functions access to the Google Workspace APIs. The JSON should be unescaped.
+
+    ```console
+    $ aws ssm put-parameter --name ServiceAccountParameterName --type SecureString --value $SERVICE_ACCOUNT_JSON_STRING --overwrite
+    ```
+
+    If service account info is stored in a SAM-formatted environment variable JSON (stored in `env/service-account.json`):
+
+    ```console
+    $ aws ssm put-parameter --name ServiceAccountParameterName --type SecureString --value "$(cat env/service-account.json | jq -c '.Parameters.SERVICE_ACCOUNT_INFO | fromjson')" --overwrite
+    ```
+
+    To directly use service account JSON:
+
+    ```console
+    $ aws ssm put-parameter --name ServiceAccountParameterName --type SecureString --value "$(cat /path/to/service-account.json)" --overwrite
+    ```
 
   - For local development/invoke, store the credentials in a properly formatted environment variable JSON (see [#local-development](#local-development)).
 
@@ -50,26 +73,19 @@ Prior to deployment (or development):
 
 ### Local development
 
-SAM local [cannot access Parameter Store](https://github.com/aws/aws-sam-cli/issues/616#issuecomment-707891861) into environment variables, so the service account credentials need to be stored as local JSON and read into the SAM local server using `--env-vars`. The data read in with `--env-vars` will override the values defined in the SAM template.
+SAM local does not work with Parameter Store, so service account credentials need to be stored in Lambda function environment variables.
+
+- [Cannot access Parameter Store](https://github.com/aws/aws-sam-cli/issues/616#issuecomment-707891861) into environment variables.
+- Lambda functions cannot resolve secure string parameters via [dynamic reference in CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references-ssm-secure-strings.html).
+- Does not create Parameter Store parameters, which makes parameters unreachable by Lambda function code (`Boto3`).
+
+The Lambda functions are authored such that service account credentials can be read from environment variable `SERVICE_ACCOUNT_INFO`, if it exists. For local development, the environment variable can be stored in JSON and read into the SAM local server using `--env-vars`. The data read in with `--env-vars` will override the values defined in the SAM template.
 
 ```console
 $ sam local start-api --env-vars env/service_account.json
 ```
 
-The environment variable file should take the form as described in the [documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-invoke.html#serverless-sam-cli-using-invoke-environment-file):
-
-```json
-{
-  "MyFunction1": {
-    "SERVICE_ACCOUNT": "..."
-  },
-  "MyFunction2": {
-    "SERVICE_ACCOUNT": "..."
-  }
-}
-```
-
-or, to apply globally
+The environment variable file should take the form as described in the [documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-invoke.html#serverless-sam-cli-using-invoke-environment-file). To apply globally:
 
 ```json
 {

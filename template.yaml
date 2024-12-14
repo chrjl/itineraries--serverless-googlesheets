@@ -52,6 +52,22 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /itineraries
             Method: GET
+  CreateItineraryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: create_itinerary.lambda_handler
+      Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /itineraries
+            Method: POST
   GetItineraryFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -69,23 +85,42 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /itineraries/{id}
             Method: GET
+  ArchiveItineraryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: archive_itinerary.lambda_handler
+      Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /itineraries/{id}
+            Method: DELETE
 
 Outputs:
   ServiceAccountInfoParameter:
     Description: Parameter name
-    Value:
-      Ref: ServiceAccountInfoParameter
+    Value: !Ref ServiceAccountInfoParameter
   HttpApiUrl:
     Description: URL of your API endpoint
-    Value:
-      Fn::Sub: 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/'
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/
   HttpApiId:
     Description: Api id of HttpApi
-    Value:
-      Ref: HttpApi
+    Value: !Ref HttpApi
   GetAllItinerariesFunction:
     Description: GetAllItinerariesFunction ARN
     Value: !GetAtt GetAllItinerariesFunction.Arn
   GetItineraryFunction:
     Description: GetItineraryFunction ARN
     Value: !GetAtt GetItineraryFunction.Arn
+  CreateItineraryFunction:
+    Description: CreateItineraryFunction ARN
+    Value: !GetAtt CreateItineraryFunction.Arn
+  ArchiveItineraryFunction:
+    Description: ArchiveItineraryFunction ARN
+    Value: !GetAtt ArchiveItineraryFunction.Arn

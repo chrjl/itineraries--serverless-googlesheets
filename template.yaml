@@ -6,12 +6,12 @@ Description: >
   SAM Template for itineraries--serverless-googlesheets
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 10
     Layers:
       - !Ref GoogleApiPythonClientLayer
     Environment:
       Variables:
-        SERVICE_ACCOUNT: null
+        # SERVICE_ACCOUNT_INFO: null
         SERVICE_ACCOUNT_PARAMETER_NAME: !Ref ServiceAccountInfoParameter
 Parameters:
   StageName:
@@ -42,11 +42,14 @@ Resources:
       CodeUri: src/
       Handler: get_all_itineraries.lambda_handler
       Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
       Events:
         HttpApi:
           Type: HttpApi
           Properties:
-            ApiId: HttpApi
+            ApiId: !Ref HttpApi
             Path: /itineraries
             Method: GET
   GetItineraryFunction:
@@ -55,11 +58,15 @@ Resources:
       CodeUri: src/
       Handler: get_itinerary.lambda_handler
       Runtime: python3.13
+      MemorySize: 256
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
       Events:
         HttpApi:
           Type: HttpApi
           Properties:
-            ApiId: HttpApi
+            ApiId: !Ref HttpApi
             Path: /itineraries/{id}
             Method: GET
 

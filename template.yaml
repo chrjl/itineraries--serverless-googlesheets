@@ -68,6 +68,38 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /itineraries
             Method: POST
+  GetArchivedItinerariesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: get_archived_itineraries.lambda_handler
+      Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /archives
+            Method: GET
+  DeleteArchivedItineraryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: delete_archived_itinerary.lambda_handler
+      Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /archives/{id}
+            Method: DELETE
   GetItineraryFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -118,6 +150,12 @@ Outputs:
   GetItineraryFunction:
     Description: GetItineraryFunction ARN
     Value: !GetAtt GetItineraryFunction.Arn
+  GetArchivedItinerariesFunction:
+    Description: GetArchivedItinerariesFunction ARN
+    Value: !GetAtt GetItineraryFunction.Arn
+  DeleteArchivedItineraryFunction:
+    Description: DeleteArchivedItineraryFunction ARN
+    Value: !GetAtt DeleteArchivedItineraryFunction.Arn
   CreateItineraryFunction:
     Description: CreateItineraryFunction ARN
     Value: !GetAtt CreateItineraryFunction.Arn

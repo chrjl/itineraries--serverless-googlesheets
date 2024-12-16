@@ -133,6 +133,38 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /itineraries/{id}
             Method: DELETE
+  CreateActivityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: create_activity.lambda_handler
+      Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /itineraries/{id}
+            Method: POST
+  DeleteActivityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: delete_activity.lambda_handler
+      Runtime: python3.13
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref ServiceAccountInfoParameter
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /itineraries/{id}/{activity_type}/{index}
+            Method: DELETE
 
 Outputs:
   ServiceAccountInfoParameter:
@@ -162,3 +194,9 @@ Outputs:
   ArchiveItineraryFunction:
     Description: ArchiveItineraryFunction ARN
     Value: !GetAtt ArchiveItineraryFunction.Arn
+  CreateActivityFunction:
+    Description: CreateActivityFunction ARN
+    Value: !GetAtt CreateActivityFunction.Arn
+  DeleteActivityFunction:
+    Description: DeleteActivityFunction ARN
+    Value: !GetAtt DeleteActivityFunction.Arn

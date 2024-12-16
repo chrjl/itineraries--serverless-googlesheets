@@ -42,8 +42,8 @@ def lambda_handler(event, context):
         )
         rows = request.execute().get("values", [])
         activities = [
-            {"category": "activity", **activity}
-            for activity in spreadsheet_to_dict(rows)
+            {"index": index + 1, **activity}
+            for index, activity in enumerate(spreadsheet_to_dict(rows))
         ]
 
     with build("sheets", "v4", credentials=credentials) as service:
@@ -54,21 +54,31 @@ def lambda_handler(event, context):
         )
         rows = request.execute().get("values", [])
         transportation = [
-            {"category": "transportation", **transportation}
-            for transportation in spreadsheet_to_dict(rows)
+            {"index": index + 1, **activity}
+            for index, activity in enumerate(spreadsheet_to_dict(rows))
         ]
 
     with build("sheets", "v4", credentials=credentials) as service:
         request = service.spreadsheets().values().get(spreadsheetId=id, range="housing")
         rows = request.execute().get("values", [])
         housing = [
-            {"category": "housing", **housing} for housing in spreadsheet_to_dict(rows)
+            {"index": index + 1, **activity}
+            for index, activity in enumerate(spreadsheet_to_dict(rows))
         ]
 
     return {
         "statusCode": 200,
         "headers": {"Content-Type": "application/json"},
-        "body": json.dumps({**file, "data": [*activities, *housing, *transportation]}),
+        "body": json.dumps(
+            {
+                **file,
+                "data": {
+                    "activities": activities,
+                    "housing": housing,
+                    "transportation": transportation,
+                },
+            }
+        ),
     }
 
 

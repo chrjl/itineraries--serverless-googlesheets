@@ -143,12 +143,18 @@ Resources:
         - SSMParameterReadPolicy:
             ParameterName: !Ref ServiceAccountInfoParameter
       Events:
-        HttpApi:
+        CreateActivity:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
             Path: /itineraries/{id}
             Method: POST
+        OverwriteActivity:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /itineraries/{id}/{activity_type}/{index}
+            Method: PUT
   DeleteActivityFunction:
     Type: AWS::Serverless::Function
     Properties:

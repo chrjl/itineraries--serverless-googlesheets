@@ -9,6 +9,8 @@ from googleapiclient.errors import HttpError
 
 def lambda_handler(event, context):
     itinerary_id = event["pathParameters"]["id"]
+    activity_type = event["pathParameters"].get("activity_type")
+    activity_index = event["pathParameters"].get("index")
     body = event["body"]
 
     # Load service account credentials
@@ -60,19 +62,38 @@ def lambda_handler(event, context):
     row = [body.get(field, "") for field in header]
 
     # Add activity to sheet
+    # If activity_index is provided, overwrite row. Otherwise, append sheet with new activity.
     request_body = {"values": [row]}
-    with build("sheets", "v4", credentials=credentials) as service:
-        request = (
-            service.spreadsheets()
-            .values()
-            .append(
-                spreadsheetId=itinerary_id,
-                range=sheet_name,
-                valueInputOption="RAW",
-                body=request_body,
+
+    if activity_index:
+        row_number = int(activity_index) + 1
+        range_name = f"{sheet_name}!{row_number}:{row_number}"
+        with build("sheets", "v4", credentials=credentials) as service:
+            request = (
+                service.spreadsheets()
+                .values()
+                .update(
+                    spreadsheetId=itinerary_id,
+                    range=range_name,
+                    valueInputOption="RAW",
+                    body=request_body,
+                )
             )
-        )
-        response = request.execute()
+            response = request.execute()
+
+    else:
+        with build("sheets", "v4", credentials=credentials) as service:
+            request = (
+                service.spreadsheets()
+                .values()
+                .append(
+                    spreadsheetId=itinerary_id,
+                    range=sheet_name,
+                    valueInputOption="RAW",
+                    body=request_body,
+                )
+            )
+            response = request.execute()
 
     return {
         "statusCode": 200,

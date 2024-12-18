@@ -155,6 +155,12 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /itineraries/{id}/{sheet_name}/{index}
             Method: PUT
+        PatchActivity:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /itineraries/{id}/{sheet_name}/{index}
+            Method: PATCH
   DeleteActivityFunction:
     Type: AWS::Serverless::Function
     Properties:

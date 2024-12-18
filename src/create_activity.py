@@ -1,5 +1,6 @@
 import json
 import os
+from itertools import zip_longest
 import boto3
 
 from google.oauth2 import service_account
@@ -12,6 +13,7 @@ def lambda_handler(event, context):
     sheet_name = event["pathParameters"].get("sheet_name")
     activity_index = event["pathParameters"].get("index")
     body = event["body"]
+    method = event["requestContext"]["http"]["method"]
 
     # Load service account credentials
     if SERVICE_ACCOUNT_DATA := os.getenv("SERVICE_ACCOUNT_INFO"):
@@ -62,12 +64,36 @@ def lambda_handler(event, context):
     row = [body.get(field, "") for field in header]
 
     # Add activity to sheet
-    # If activity_index is provided, overwrite row. Otherwise, append sheet with new activity.
-    request_body = {"values": [row]}
-
-    if activity_index:
+    # For PUT or PATCH, overwrite row. Otherwise (POST), append new row to sheet
+    if method in ["PUT", "PATCH"]:
         row_number = int(activity_index) + 1
         range_name = f"{sheet_name}!{row_number}:{row_number}"
+
+        if method == "PATCH":
+            # Update values of existing row
+            with build("sheets", "v4", credentials=credentials) as service:
+                request = (
+                    service.spreadsheets()
+                    .values()
+                    .get(spreadsheetId=itinerary_id, range=range_name)
+                )
+                response = request.execute()
+                existing_values = response["values"][0]
+
+            request_body = {
+                "values": [
+                    [
+                        new_value or existing_value or ""
+                        for (existing_value, new_value) in zip_longest(
+                            existing_values, row
+                        )
+                    ]
+                ]
+            }
+
+        else:
+            request_body = {"values": [row]}
+
         with build("sheets", "v4", credentials=credentials) as service:
             request = (
                 service.spreadsheets()
@@ -80,8 +106,9 @@ def lambda_handler(event, context):
                 )
             )
             response = request.execute()
-
     else:
+        request_body = {"values": [row]}
+
         with build("sheets", "v4", credentials=credentials) as service:
             request = (
                 service.spreadsheets()

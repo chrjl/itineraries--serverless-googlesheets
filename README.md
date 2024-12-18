@@ -7,28 +7,34 @@ AWS SAM project for serverless front-facing API of trip itinerary planning app b
 
 This project creates the following resources:
 
-- [x] Parameter Store parameter: to store the Google Cloud service account credentials
+- Parameter Store parameter: to store the Google Cloud service account credentials
 
   The parameter needs to be manually written after creation (a placeholder value is set in the template). See [#development-and-deployment](#development-and-deployment).
 
-- [x] API Gateway HTTP API
-- [x] Lambda layer: [`google-api-python-client`](https://github.com/googleapis/google-api-python-client) Lambda dependency
+- API Gateway HTTP API
+- Lambda layer: [`google-api-python-client`](https://github.com/googleapis/google-api-python-client) Lambda dependency
 
 Migration Lambda function
 
-- [ ] Scaffold Google Drive folders, template spreadsheet
+- [!TODO] Scaffold Google Drive folders, template spreadsheet
 
 Lambda functions (and API routes) for read:
 
-- [x] Get all itineraries
-- [x] Get an itinerary
+- Get all active itineraries
+- Get all archived itineraries
+- Get an itinerary
 
 Lambda functions (and API routes) for write:
 
-- [ ] Create an itinerary
-- [ ] Delete an itinerary
-- [ ] Add an activity to itinerary
-- [ ] Update an itinerary
+- Create an itinerary
+- Archive an itinerary
+- Delete an archived itinerary
+- Add an activity to itinerary
+- Delete an activity from itinerary
+- Overwrite an activity
+- Patch an activity
+
+## Credentials
 
 The Lambda functions require Google Cloud service account credentials, and are authored to search for them. The Lambda code is authored to search first in environment variables (`SERVICE_ACCOUNT_INFO`) then, if the environment variable is not found, in SSM Parameter Store.
 

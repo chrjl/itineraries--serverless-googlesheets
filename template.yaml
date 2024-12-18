@@ -147,13 +147,13 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /itineraries/{id}
+            Path: /itineraries/{id}/{sheet_name}
             Method: POST
         OverwriteActivity:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /itineraries/{id}/{activity_type}/{index}
+            Path: /itineraries/{id}/{sheet_name}/{index}
             Method: PUT
   DeleteActivityFunction:
     Type: AWS::Serverless::Function

@@ -8,8 +8,8 @@ from googleapiclient.errors import HttpError
 
 
 def lambda_handler(event, context):
-    itinerary_id = event["pathParameters"]["id"]
-    activity_type = event["pathParameters"].get("activity_type")
+    itinerary_id = event["pathParameters"].get("id")
+    sheet_name = event["pathParameters"].get("sheet_name")
     activity_index = event["pathParameters"].get("index")
     body = event["body"]
 
@@ -29,34 +29,34 @@ def lambda_handler(event, context):
         SERVICE_ACCOUNT_INFO, scopes=SCOPES
     )
 
-    # Validate request body
+    # Validate request
+    if activity_index and not activity_index.isdigit():
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Non-integer activity index"}),
+        }
+
     if not body:
         return {"statusCode": 400, "body": json.dumps({"message": "Empty body"})}
 
     body = json.loads(body)
 
-    if body["type"] == "activity":
-        sheet_name = "activities"
-    elif body["type"] == "transportation":
-        sheet_name = "transportation"
-    elif body["type"] == "housing":
-        sheet_name = "housing"
-    else:
+    # Retrieve sheet header
+    try:
+        with build("sheets", "v4", credentials=credentials) as service:
+            request = (
+                service.spreadsheets()
+                .values()
+                .get(spreadsheetId=itinerary_id, range=f"{sheet_name}!1:1")
+            )
+            response = request.execute()
+
+            header = response["values"][0]
+    except HttpError as err:
         return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Missing or unsupported activity type"}),
+            "body": json.dumps({"message": "Error loading sheet"}),
         }
-
-    # Retrieve sheet header
-    with build("sheets", "v4", credentials=credentials) as service:
-        request = (
-            service.spreadsheets()
-            .values()
-            .get(spreadsheetId=itinerary_id, range=f"{sheet_name}!1:1")
-        )
-        response = request.execute()
-
-        header = response["values"][0]
 
     # Create sheet row from JSON body
     row = [body.get(field, "") for field in header]

@@ -60,11 +60,12 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": json.dumps({"message": err}, default=str)}
 
     # Share file if email provided
-    with build("drive", "v3", credentials=credentials) as service:
-        permissions_metadata = {"type": "user", "emailAddress": email, "role": "reader"}
-        request = service.permissions().create(
-            fileId=file_id, body=permissions_metadata
-        )
-        response = request.execute()
+    if email:
+        with build("drive", "v3", credentials=credentials) as service:
+            permissions_metadata = {"type": "user", "emailAddress": email, "role": "reader"}
+            request = service.permissions().create(
+                fileId=file_id, body=permissions_metadata
+            )
+            response = request.execute()
 
     return {"statusCode": 201, "body": json.dumps({"id": file_id})}

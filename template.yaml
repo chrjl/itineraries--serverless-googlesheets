@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
+Description: |
   itineraries--serverless-googlesheets
-
   SAM Template for itineraries--serverless-googlesheets
 Globals:
   Function:
@@ -106,7 +105,7 @@ Resources:
       CodeUri: src/
       Handler: get_itinerary.lambda_handler
       Runtime: python3.13
-      MemorySize: 256
+      MemorySize: 512
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: !Ref ServiceAccountInfoParameter
@@ -139,6 +138,7 @@ Resources:
       CodeUri: src/
       Handler: create_activity.lambda_handler
       Runtime: python3.13
+      MemorySize: 512
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: !Ref ServiceAccountInfoParameter
@@ -167,6 +167,7 @@ Resources:
       CodeUri: src/
       Handler: delete_activity.lambda_handler
       Runtime: python3.13
+      MemorySize: 256
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: !Ref ServiceAccountInfoParameter

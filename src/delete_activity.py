@@ -9,7 +9,7 @@ from googleapiclient.errors import HttpError
 
 def lambda_handler(event, context):
     itinerary_id = event["pathParameters"]["id"]
-    activity_type = event["pathParameters"]["activity_type"]
+    sheet_name = event["pathParameters"]["sheet_name"]
     index = event["pathParameters"]["index"]
 
     # Load service account credentials
@@ -59,7 +59,7 @@ def lambda_handler(event, context):
     sheet_id = [
         sheet["properties"]["sheetId"]
         for sheet in sheets
-        if sheet["properties"]["title"] == activity_type
+        if sheet["properties"]["title"] == sheet_name
     ][0]
 
     # Delete row from sheet

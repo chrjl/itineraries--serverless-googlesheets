@@ -175,7 +175,7 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /itineraries/{id}/{activity_type}/{index}
+            Path: /itineraries/{id}/{sheet_name}/{index}
             Method: DELETE
 
 Outputs:

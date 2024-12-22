@@ -32,9 +32,11 @@ def lambda_handler(event, context):
         folders = {file.get("name"): file.get("id") for file in response.get("files")}
 
     # Retrieve itineraries
+    fields = "files(id,mimeType,name,createdTime,modifiedTime)"
     with build("drive", "v3", credentials=credentials) as service:
         request = service.files().list(
-            q=f"mimeType='application/vnd.google-apps.spreadsheet' and '{folders['Itineraries']}' in parents"
+            q=f"mimeType='application/vnd.google-apps.spreadsheet' and '{folders['Itineraries']}' in parents",
+            fields=fields,
         )
         response = request.execute()
         itineraries = response.get("files")

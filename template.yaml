@@ -28,6 +28,13 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref StageName
+      CorsConfiguration:
+        AllowMethods:
+          - '*'
+        AllowHeaders:
+          - '*'
+        AllowOrigins:
+          - '*'
   GoogleApiPythonClientLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
